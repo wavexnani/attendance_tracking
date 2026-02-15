@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'data/database/app_database.dart';
 import 'application/engines/timetable_engine.dart';
+import 'application/engines/clock_observer.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -8,7 +9,7 @@ void main() async {
   final db = AppDatabase();
   final timetableEngine = TimetableEngine(db);
 
-  // Insert test data
+  // Insert test timetable (whole day active)
   final versionId = await db.into(db.timetableVersions).insert(
         TimetableVersionsCompanion.insert(
           createdAt: DateTime.now(),
@@ -21,18 +22,16 @@ void main() async {
           subjectName: "OS",
           dayOfWeek: DateTime.now().weekday,
           startMinutes: 0,
-          endMinutes: 1440, // whole day
+          endMinutes: 1440,
         ),
       );
 
-  final activeSlot =
-      await timetableEngine.getActiveSlot(DateTime.now());
-
-  print("Active Slot: ${activeSlot?.subjectName}");
+  final observer = ClockObserver(timetableEngine);
+  observer.start();
 
   runApp(const MaterialApp(
     home: Scaffold(
-      body: Center(child: Text("Timetable Test Running")),
+      body: Center(child: Text("Clock Observer Running")),
     ),
   ));
 }
